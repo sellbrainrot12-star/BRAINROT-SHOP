@@ -1,37 +1,95 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRAINROT SHOP</title>
+    <link href="https://fonts.googleapis.com" rel="stylesheet">
+    <style>
+        :root { --main: #00ff88; --bg: #050505; --card: #111; }
+        * { box-sizing: border-box; transition: 0.2s; font-family: 'Montserrat', sans-serif; }
+        body { background: var(--bg); color: #fff; margin: 0; padding: 20px; }
+        h1 { text-align: center; font-size: 3rem; color: var(--main); text-shadow: 0 0 20px rgba(0,255,136,0.3); margin: 40px 0; }
+        .container { max-width: 1200px; margin: auto; }
+        .shop-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .card { background: var(--card); border: 1px solid #222; border-radius: 20px; padding: 15px; text-align: center; }
+        .card img { width: 100%; height: 250px; object-fit: cover; border-radius: 15px; background: #222; }
+        .price { font-size: 24px; font-weight: 900; color: var(--main); margin: 15px 0; }
+        .buy-btn { background: var(--main); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 900; cursor: pointer; width: 100%; }
+        
+        #checkout { 
+            position: fixed; bottom: 20px; right: 20px; left: 20px; 
+            background: #fff; color: #000; padding: 25px; border-radius: 20px; 
+            display: none; z-index: 1000; box-shadow: 0 10px 50px rgba(0,0,0,0.8);
+        }
+        @media (min-width: 768px) { #checkout { left: auto; width: 350px; } }
+        #checkout input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>BRAINROT SHOP</h1>
+    <div class="shop-grid">
+        <div class="card">
+            <img src="https://via.placeholder.com" alt="img">
+            <h3>БРЕЙНРОТ #1</h3>
+            <div class="price">500 ₽</div>
+            <button class="buy-btn" onclick="add('БРЕЙНРОТ #1', 500)">В КОРЗИНУ</button>
+        </div>
+        <div class="card">
+            <img src="https://via.placeholder.com" alt="img">
+            <h3>БРЕЙНРОТ #2</h3>
+            <div class="price">1000 ₽</div>
+            <button class="buy-btn" onclick="add('БРЕЙНРОТ #2', 1000)">В КОРЗИНУ</button>
+        </div>
+    </div>
+</div>
+
+<div id="checkout">
+    <h2 style="margin:0 0 10px">Чек:</h2>
+    <div id="items-list" style="font-size: 14px; color: #555;"></div>
+    <div style="font-size: 24px; font-weight: 900; margin: 10px 0;">Итого: <span id="total-sum">0</span> ₽</div>
+    <input type="text" id="user-contact" placeholder="Твой @Telegram" required>
+    <button class="buy-btn" style="background:#000; color:#fff" onclick="sendToTg()">ОФОРМИТЬ ЗАКАЗ</button>
+</div>
+
 <script>
     let cart = [];
     
-    // ТВОИ ДАННЫЕ
+    // ТВОИ ПРОВЕРЕННЫЕ ДАННЫЕ
     const TG_TOKEN = "8449687084:AAEPc1HDjswpTnuQVgtJ-yyccHi3MQcZXGQ"; 
-    const TG_CHAT_ID = "8098293089"; // Твой личный ID
+    const TG_CHAT_ID = "8098293089"; 
 
     function add(name, price) {
         cart.push({name, price});
         document.getElementById('checkout').style.display = 'block';
         let total = cart.reduce((s, i) => s + i.price, 0);
-        document.getElementById('items-list').innerText = "Выбрано: " + cart.map(i => i.name).join(', ');
+        document.getElementById('items-list').innerText = cart.map(i => i.name).join(', ');
         document.getElementById('total-sum').innerText = total;
     }
 
-    function sendToTg() {
+    async function sendToTg() {
         const contact = document.getElementById('user-contact').value;
         if(!contact) return alert('Введи свой телеграмм!');
 
         const items = cart.map(i => i.name).join(', ');
         const total = cart.reduce((s, i) => s + i.price, 0);
-        const text = `🛍 НОВЫЙ ЗАКАЗ!\n📦 Товары: ${items}\n💰 Сумма: ${total} руб.\n👤 Клиент: ${contact}`;
+        const text = `🛍 НОВЫЙ ЗАКАЗ!\n\n📦 Товары: ${items}\n💰 Сумма: ${total} руб.\n👤 Клиент: ${contact}`;
 
-        // Самый надежный способ для работы с GitHub Pages
-        fetch(`https://api.telegram.org{TG_TOKEN}/sendMessage?chat_id=${TG_CHAT_ID}&text=${encodeURIComponent(text)}`)
-        .then(response => {
-            if(response.ok) {
-                alert('✅ Заказ отправлен! Проверяй личку бота.');
-                cart = [];
-                document.getElementById('checkout').style.display = 'none';
-            } else {
-                alert('Ошибка: бот не запущен или ID неверный');
-            }
-        })
-        .catch(() => alert('Браузер блокирует запрос. Залей сайт на GitHub Pages!'));
+        const url = `https://api.telegram.org{TG_TOKEN}/sendMessage?chat_id=${TG_CHAT_ID}&text=${encodeURIComponent(text)}`;
+
+        try {
+            await fetch(url);
+            alert('✅ Заказ улетел! Проверяй личку бота.');
+            cart = [];
+            document.getElementById('checkout').style.display = 'none';
+            document.getElementById('user-contact').value = '';
+        } catch (e) {
+            alert('Ошибка отправки. Попробуй еще раз.');
+        }
     }
+</script>
+</body>
+</html>
 </script>
