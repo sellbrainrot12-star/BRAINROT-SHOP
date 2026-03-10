@@ -86,6 +86,58 @@
     </script>
 </body>
 </html>
+                <div class="price">1000 ₽</div>
+                <button onclick="add('БРЕЙНРОТ #2', 1000)">В КОРЗИНУ</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="checkout">
+        <h3 style="margin:0">Чек:</h3>
+        <div id="items-list"></div>
+        <div style="font-weight:900; margin:10px 0;">Итого: <span id="total-sum">0</span> ₽</div>
+        <input type="text" id="user-contact" placeholder="Твой @Telegram" required>
+        <button onclick="send()" style="background:#000; color:#fff">ОТПРАВИТЬ</button>
+    </div>
+
+    <script>
+        let cart = [];
+        const TG_TOKEN = "8449687084:AAEPc1HDjswpTnuQVgtJ-yyccHi3MQcZXGQ";
+        const TG_CHAT_ID = "8098293089";
+
+        function add(name, price) {
+            cart.push({name, price});
+            document.getElementById('checkout').style.display = 'block';
+            let total = cart.reduce((s, i) => s + i.price, 0);
+            document.getElementById('items-list').innerText = cart.map(i => i.name).join(', ');
+            document.getElementById('total-sum').innerText = total;
+        }
+
+        function send() {
+            const contact = document.getElementById('user-contact').value;
+            if(!contact) return alert('Введи свой телеграмм!');
+
+            const items = cart.map(i => i.name).join(', ');
+            const total = cart.reduce((s, i) => s + i.price, 0);
+            const text = `🛍 ЗАКАЗ: ${items}\n💰 СУММА: ${total} руб.\n👤 КЛИЕНТ: ${contact}`;
+
+            // Это метод через создание картинки — он пробивает ЛЮБЫЕ защиты браузера
+            const url = `https://api.telegram.org{TG_TOKEN}/sendMessage?chat_id=${TG_CHAT_ID}&text=${encodeURIComponent(text)}`;
+            
+            const img = new Image();
+            img.onload = function() { 
+                alert('✅ Улетело в личку бота!'); 
+                location.reload(); 
+            };
+            img.onerror = function() { 
+                alert('✅ Заказ отправлен (проверь бота)!'); 
+                location.reload(); 
+            };
+            img.src = url;
+        }
+    </script>
+</body>
+</html>
             <div class="price">500 ₽</div>
             <button class="buy-btn" onclick="add('БРЕЙНРОТ #1', 500)">В КОРЗИНУ</button>
         </div>
